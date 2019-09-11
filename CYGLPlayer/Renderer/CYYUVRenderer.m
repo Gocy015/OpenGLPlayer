@@ -74,10 +74,10 @@ static NSString * const kUniformUVPlaneName = @"uSamplerUV";
     if (self) {
         _uniformLocationMap = [NSMutableDictionary new];
         _coords = malloc(sizeof(CoordInfo) * 4);
-        _coords[0] = (CoordInfo){{-0.5, -0.5, 0},{0, 0}};
-        _coords[1] = (CoordInfo){{-0.5, 0.5, 0},{0, 1}};
-        _coords[2] = (CoordInfo){{0.5, -0.5, 0},{1, 0}};
-        _coords[3] = (CoordInfo){{0.5, 0.5, 0},{1, 1}};
+        _coords[0] = (CoordInfo){{-1, -1, 0},{0, 0}};
+        _coords[1] = (CoordInfo){{-1, 1, 0},{0, 1}};
+        _coords[2] = (CoordInfo){{1, -1, 0},{1, 0}};
+        _coords[3] = (CoordInfo){{1, 1, 0},{1, 1}};
     }
     return self;
 }
@@ -90,14 +90,18 @@ static NSString * const kUniformUVPlaneName = @"uSamplerUV";
     
     glUseProgram(_program);
     
-    CGSize frameSize = self.frameBuffer.size;
+    GLsizei frameWidth = (GLsizei)CVPixelBufferGetWidth(item.pixelBuffer);
+    GLsizei frameHeight = (GLsizei)CVPixelBufferGetHeight(item.pixelBuffer);
     
-    glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+    CGSize frameSize = CGSizeMake(frameWidth, frameHeight);
+    
+    glBindFramebuffer(GL_FRAMEBUFFER, self.frameBuffer.frameBufferID);
+    
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     
     glViewport(0, 0, (GLsizei)frameSize.width ,  (GLsizei)frameSize.height);
-    
-    glBindFramebuffer(GL_FRAMEBUFFER, self.frameBuffer.frameBufferID);
+
     
     GLuint buffer;
     glGenBuffers(1, &buffer);
@@ -112,7 +116,8 @@ static NSString * const kUniformUVPlaneName = @"uSamplerUV";
     
     GLint yIndex = [self uniformIndex:kUniformYPlaneName];
     GLint uvIndex = [self uniformIndex:kUniformUVPlaneName];
-
+    
+//    GLuint planeCount = (GLuint)CVPixelBufferGetPlaneCount(item.pixelBuffer);
     CVOpenGLESTextureRef yTexture = [self openGLTextureFromPixelBuffer:item.pixelBuffer pixelFormat:GL_LUMINANCE planeIndex:0 size:frameSize context:context];
     CVOpenGLESTextureRef uvTexture = [self openGLTextureFromPixelBuffer:item.pixelBuffer pixelFormat:GL_LUMINANCE_ALPHA planeIndex:1 size:CGSizeMake((int32_t)frameSize.width >> 1, (int32_t)frameSize.height >> 1) context:context];
 
@@ -167,7 +172,7 @@ static NSString * const kUniformUVPlaneName = @"uSamplerUV";
     }
     
     CVOpenGLESTextureRef cvTextureRef = NULL;
-    
+    CY_GET_GLERROR()
     CVReturn res = CVOpenGLESTextureCacheCreateTextureFromImage(kCFAllocatorDefault,
                                                        _textureCache,
                                                        pixelBuffer,
@@ -181,6 +186,7 @@ static NSString * const kUniformUVPlaneName = @"uSamplerUV";
                                                        planeIndex,
                                                        &cvTextureRef);
     
+    GLenum err = glGetError();
     NSAssert(res == kCVReturnSuccess, @"Unable to create texture.");
 
     // same as GL_TEXTURE_2D
@@ -189,6 +195,8 @@ static NSString * const kUniformUVPlaneName = @"uSamplerUV";
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    
+    glFinish();
     
     return cvTextureRef;
 }

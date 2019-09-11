@@ -79,7 +79,7 @@ static const GLint kSampleCoordsAttributeIndex = 1;
     self = [super init];
     if (self) {
         _videoURL = url;
-        self.backgroundColor = UIColor.greenColor;
+        self.backgroundColor = UIColor.blackColor;
         self.bounds = UIScreen.mainScreen.bounds;
         [self _doInit];
     }
@@ -93,7 +93,8 @@ static const GLint kSampleCoordsAttributeIndex = 1;
     NSDictionary *settings = @{
                                (id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange),
                                (id)kCVPixelBufferOpenGLCompatibilityKey: @YES,
-                               (id)kCVPixelBufferBytesPerRowAlignmentKey:@(1),
+//                               (id)kCVPixelBufferBytesPerRowAlignmentKey:@(1),
+//                               (id)kCVPixelBufferIOSurfacePropertiesKey: @{},
                                };
     _playerItem = [AVPlayerItem playerItemWithURL:_videoURL];
     _videoOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:settings];
