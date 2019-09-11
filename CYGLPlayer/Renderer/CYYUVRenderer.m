@@ -30,18 +30,18 @@ static NSString * kFragString = STRINGIFY
 (
  precision mediump float;
  varying mediump vec2 vSamplerCoordinate;
-// uniform sampler2D uSamplerY;
-// uniform sampler2D uSamplerUV;
+ uniform sampler2D uSamplerY;
+ uniform sampler2D uSamplerUV;
  
  void main() {
-//     mediump vec3 yuv;
-//     mediump vec3 rgb;
-//
-//     yuv.x = texture2D(uSamplerY, vSamplerCoordinate).r - (16.0 / 255.0);
-//     yuv.yz = texture2D(uSamplerUV, vSamplerCoordinate).ra - vec2(128.0 / 255.0, 128.0 / 255.0);
-//
-//     rgb = yuv;
-     gl_FragColor = vec4(0.3, 0.5, 0.7, 1.0);
+     mediump vec3 yuv;
+     mediump vec3 rgb;
+
+     yuv.x = texture2D(uSamplerY, vSamplerCoordinate).r - (16.0 / 255.0);
+     yuv.yz = texture2D(uSamplerUV, vSamplerCoordinate).ra - vec2(128.0 / 255.0, 128.0 / 255.0);
+
+     rgb = yuv;
+     gl_FragColor = vec4(rgb, 1.0);
  }
 );
 
@@ -74,10 +74,10 @@ static NSString * const kUniformUVPlaneName = @"uSamplerUV";
     if (self) {
         _uniformLocationMap = [NSMutableDictionary new];
         _coords = malloc(sizeof(CoordInfo) * 4);
-        _coords[0] = (CoordInfo){{-1, -1, 0},{0, 0}};
-        _coords[1] = (CoordInfo){{-1, 1, 0},{0, 1}};
-        _coords[2] = (CoordInfo){{1, -1, 0},{1, 0}};
-        _coords[3] = (CoordInfo){{1, 1, 0},{1, 1}};
+        _coords[0] = (CoordInfo){{-0.5, -0.5, 0},{0, 0}};
+        _coords[1] = (CoordInfo){{-0.5, 0.5, 0},{0, 1}};
+        _coords[2] = (CoordInfo){{0.5, -0.5, 0},{1, 0}};
+        _coords[3] = (CoordInfo){{0.5, 0.5, 0},{1, 1}};
     }
     return self;
 }
@@ -95,7 +95,7 @@ static NSString * const kUniformUVPlaneName = @"uSamplerUV";
     glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     
-    glViewport(0, 0, frameSize.width, frameSize.height);
+    glViewport(0, 0, (GLsizei)frameSize.width ,  (GLsizei)frameSize.height);
     
     glBindFramebuffer(GL_FRAMEBUFFER, self.frameBuffer.frameBufferID);
     
@@ -110,35 +110,34 @@ static NSString * const kUniformUVPlaneName = @"uSamplerUV";
     glEnableVertexAttribArray(kSamplerAttributeIndex);
     glVertexAttribPointer(kSamplerAttributeIndex, 2, GL_FLOAT, GL_FALSE, sizeof(CoordInfo), (const GLvoid *)offsetof(CoordInfo, TextureCoords));
     
-//    GLint yIndex = [self uniformIndex:kUniformYPlaneName];
-//    GLint uvIndex = [self uniformIndex:kUniformUVPlaneName];
-//
-//    CVOpenGLESTextureRef yTexture = [self openGLTextureFromPixelBuffer:item.pixelBuffer pixelFormat:GL_LUMINANCE planeIndex:0 size:frameSize context:context];
-//    CVOpenGLESTextureRef uvTexture = [self openGLTextureFromPixelBuffer:item.pixelBuffer pixelFormat:GL_LUMINANCE_ALPHA planeIndex:1 size:CGSizeMake((int32_t)frameSize.width >> 1, (int32_t)frameSize.height >> 1) context:context];
-//
-//    //todo: cfrelease
-//
-//    glActiveTexture(GL_TEXTURE1);
-//    glBindTexture(GL_TEXTURE_2D, CVOpenGLESTextureGetName(yTexture));
-//    glUniform1i(yIndex, 1);
-//
-//    glActiveTexture(GL_TEXTURE2);
-//    glBindTexture(GL_TEXTURE_2D, CVOpenGLESTextureGetName(uvTexture));
-//    glUniform1i(uvIndex, 2);
+    GLint yIndex = [self uniformIndex:kUniformYPlaneName];
+    GLint uvIndex = [self uniformIndex:kUniformUVPlaneName];
+
+    CVOpenGLESTextureRef yTexture = [self openGLTextureFromPixelBuffer:item.pixelBuffer pixelFormat:GL_LUMINANCE planeIndex:0 size:frameSize context:context];
+    CVOpenGLESTextureRef uvTexture = [self openGLTextureFromPixelBuffer:item.pixelBuffer pixelFormat:GL_LUMINANCE_ALPHA planeIndex:1 size:CGSizeMake((int32_t)frameSize.width >> 1, (int32_t)frameSize.height >> 1) context:context];
+
+    //todo: cfrelease
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, CVOpenGLESTextureGetName(yTexture));
+    glUniform1i(yIndex, 1);
+
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, CVOpenGLESTextureGetName(uvTexture));
+    glUniform1i(uvIndex, 2);
     
 //    glBindTexture(GL_TEXTURE_2D, self.frameBuffer.textureID);
-    CY_GET_GLERROR();
     
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     
-    CY_GET_GLERROR();
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 //    glActiveTexture(GL_TEXTURE1);
 //    glBindTexture(GL_TEXTURE_2D, self.frameBuffer.textureID);
 //    UIImage *result = [self imageFromTextureWithwidth:frameSize.width height:frameSize.height];
 //    NSLog(@"%@", result);
   
     
-    glUseProgram(0);
+//    glUseProgram(0);
 }
 
 

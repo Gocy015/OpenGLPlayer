@@ -79,7 +79,7 @@ static const GLint kSampleCoordsAttributeIndex = 1;
     self = [super init];
     if (self) {
         _videoURL = url;
-        self.backgroundColor = UIColor.blackColor;
+        self.backgroundColor = UIColor.greenColor;
         self.bounds = UIScreen.mainScreen.bounds;
         [self _doInit];
     }
@@ -93,9 +93,10 @@ static const GLint kSampleCoordsAttributeIndex = 1;
     NSDictionary *settings = @{
                                (id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange),
                                (id)kCVPixelBufferOpenGLCompatibilityKey: @YES,
+                               (id)kCVPixelBufferBytesPerRowAlignmentKey:@(1),
                                };
     _playerItem = [AVPlayerItem playerItemWithURL:_videoURL];
-    _videoOutput = [[AVPlayerItemVideoOutput alloc] initWithOutputSettings:settings];
+    _videoOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:settings];
     
     _player = [[AVPlayer alloc] initWithPlayerItem:_playerItem];
     
@@ -206,16 +207,16 @@ static const GLint kSampleCoordsAttributeIndex = 1;
 
 - (void)cyyuv_frameBufferOutput:(CYFrameBuffer *)framebuffer
 {
-    EAGLContext *oldContext = [EAGLContext currentContext];
     [CYOpenGLTools ensureContext:_displayContext];
     
-    glUseProgram(_displayProgram);
-    glViewport(0, 0, self.displayLayer.bounds.size.width * UIScreen.mainScreen.scale, self.displayLayer.bounds.size.height * UIScreen.mainScreen.scale);
     
+    glUseProgram(_displayProgram);
+    glViewport(0, 0, framebuffer.size.width, framebuffer.size.height);
+    
+    glBindFramebuffer(GL_FRAMEBUFFER, _displayFramebufferID);
     glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT);
     
-    glBindFramebuffer(GL_FRAMEBUFFER, _displayFramebufferID);
     
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, framebuffer.textureID);

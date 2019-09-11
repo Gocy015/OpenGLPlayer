@@ -58,7 +58,7 @@ static void *_GLQueueKey;
 
 - (void)doInit
 {
-    _context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+    _context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES3];
     _processQueue = [self.class glQueue];
     _chainItems = [NSMutableArray new];
 }
@@ -99,9 +99,6 @@ static void *_GLQueueKey;
 
 - (void)render:(CVPixelBufferRef)pixelBuffer
 {
-//    GLenum err = glGetError();
-    
-
     dispatch_sync_task(^{
         CYYUVRenderChainItem *prevItem = nil;
         
@@ -158,7 +155,9 @@ static void *_GLQueueKey;
 {
     self = [super init];
     if (self) {
-        _frameBuffer = [[CYFrameBuffer alloc] initWithSize:UIScreen.mainScreen.bounds.size];
+        CGSize size = UIScreen.mainScreen.bounds.size;
+        CGFloat scale = UIScreen.mainScreen.scale;
+        _frameBuffer = [[CYFrameBuffer alloc] initWithSize:CGSizeMake(size.width * scale, size.height * scale)];
     }
     return self;
 }

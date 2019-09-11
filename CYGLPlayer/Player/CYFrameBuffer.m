@@ -7,6 +7,7 @@
 //
 
 #import "CYFrameBuffer.h"
+#import "CYOpenGLTools.h"
 
 @interface CYFrameBuffer ()
 
@@ -30,7 +31,7 @@
     
     glGenTextures(1, &_textureID);
     glBindTexture(GL_TEXTURE_2D, _textureID);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.width, size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  (GLsizei)size.width,  (GLsizei)size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
