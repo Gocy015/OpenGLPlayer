@@ -39,7 +39,7 @@ static NSString * kFragString = STRINGIFY
  void main() {
      mediump vec3 yuv;
      mediump vec3 rgb;
-     
+     // https://blog.csdn.net/CAICHAO1234/article/details/79260954
      if (uFullRange == 1.0) {
          yuv.x = texture2D(uSamplerY, vSamplerCoordinate).r;
          yuv.yz = texture2D(uSamplerUV, vSamplerCoordinate).ra - vec2(128.0 / 255.0, 128.0 / 255.0);
@@ -149,17 +149,19 @@ static GLfloat kColorConversion601FullRange[] = {
     glUniform1i(uvIndex, 2);
     
 //    glBindTexture(GL_TEXTURE_2D, self.frameBuffer.textureID);
-    
-    
     GLint colorIndex = [self uniformIndex:kUniformColorConversionName];
     GLint colorRangeIndex = [self uniformIndex:kUniformColorRangeName];
     
+    // todo: logic to determine yuv range
     glUniformMatrix3fv(colorIndex, 1, GL_FALSE, kColorConversion601FullRange);
     glUniform1f(colorRangeIndex, 1.0);
     
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    
+    CFRelease(yTexture);
+    CFRelease(uvTexture);
     
 }
 
@@ -225,7 +227,7 @@ static GLfloat kColorConversion601FullRange[] = {
                                                        planeIndex,
                                                        &cvTextureRef);
     
-    GLenum err = glGetError();
+//    GLenum err = glGetError();
     NSAssert(res == kCVReturnSuccess, @"Unable to create texture.");
 
     // same as GL_TEXTURE_2D

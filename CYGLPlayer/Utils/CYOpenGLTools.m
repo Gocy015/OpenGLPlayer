@@ -200,4 +200,68 @@
     return shader;
 }
 
++ (OSType)pixelFormatForAsset:(AVAsset *)asset {
+    if (asset == nil) {
+        return kCVPixelFormatType_420YpCbCr8BiPlanarFullRange;
+    }
+    
+    AVAssetTrack *videoTrack = [asset tracksWithMediaType:AVMediaTypeVideo].firstObject;
+    if (videoTrack == nil) {
+        return kCVPixelFormatType_420YpCbCr8BiPlanarFullRange;
+    }
+    NSError *error;
+    AVAssetReader *reader = [[AVAssetReader alloc] initWithAsset:asset error:&error];
+    NSDictionary *outputSettings = @{
+                                     (id)kCVPixelBufferPixelFormatTypeKey:@(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange),
+                                     (id)kCVPixelBufferIOSurfacePropertiesKey:[NSDictionary dictionary],
+                                     };
+    AVAssetReaderTrackOutput *readerOutput = [AVAssetReaderTrackOutput assetReaderTrackOutputWithTrack:videoTrack outputSettings:outputSettings];
+    if ([reader canAddOutput:readerOutput]) {
+        [reader addOutput:readerOutput];
+    } else {
+        return kCVPixelFormatType_420YpCbCr8BiPlanarFullRange;
+    }
+    
+    CMTime startTime = CMTimeMakeWithSeconds(0.0f, 1000);
+    CMTime duration = CMTimeMakeWithSeconds(0.1f, 1000);
+    reader.timeRange = CMTimeRangeMake(startTime, duration);
+    
+    [reader startReading];
+    CMSampleBufferRef sample = [readerOutput copyNextSampleBuffer];
+    [reader cancelReading];
+    OSType formatType = kCVPixelFormatType_420YpCbCr8BiPlanarFullRange;
+    if (sample != nil) {
+        CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sample);
+        if ([self isITU_R_709_2:pixelBuffer]) {
+            formatType = kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange;
+        } else {
+            formatType = kCVPixelFormatType_420YpCbCr8BiPlanarFullRange;
+        }
+        CFRelease(sample);
+    }
+    //
+    
+//   
+    
+//    kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange = '420v', /* Bi-Planar Component Y'CbCr 8-bit 4:2:0, video-range (luma=[16,235] chroma=[16,240]).  baseAddr points to a big-endian CVPlanarPixelBufferInfo_YCbCrBiPlanar struct */
+    
+//    kCVPixelFormatType_420YpCbCr8BiPlanarFullRange  = '420f', /* Bi-Planar Component Y'CbCr 8-bit 4:2:0, full-range (luma=[0,255] chroma=[1,255]).  baseAddr points to a big-endian CVPlanarPixelBufferInfo_YCbCrBiPlanar struct */
+    
+    return formatType;
+}
+
++ (BOOL)isITU_R_709_2:(CVPixelBufferRef)pixelBuffer {
+    if (!pixelBuffer) {
+        return NO;
+    }
+    CFTypeRef colorAttachments = CVBufferGetAttachment(pixelBuffer, kCVImageBufferYCbCrMatrixKey, NULL);
+    if (colorAttachments) {
+        if(CFStringCompare(colorAttachments, kCVImageBufferYCbCrMatrix_ITU_R_709_2, 0) == kCFCompareEqualTo) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
+
 @end

@@ -26,7 +26,7 @@
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear: animated];
-    NSURL *videoURL = [NSBundle.mainBundle URLForResource:@"u5408u6210_1_background" withExtension:@"mp4"];
+    NSURL *videoURL = [NSBundle.mainBundle URLForResource:@"Westlife - Hello My Love" withExtension:@"mp4"];
     [self playWithURL:videoURL];
 }
 

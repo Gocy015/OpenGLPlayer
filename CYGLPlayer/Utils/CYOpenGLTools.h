@@ -8,8 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import <OpenGLES/ES2/gl.h>
-
-NS_ASSUME_NONNULL_BEGIN
+#import <AVFoundation/AVFoundation.h>
 
 @interface CYOpenGLTools : NSObject
 
@@ -29,6 +28,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)ensureContext:(EAGLContext *)context;
 
-@end
 
-NS_ASSUME_NONNULL_END
++ (OSType)pixelFormatForAsset:(AVAsset *)asset;
+@end

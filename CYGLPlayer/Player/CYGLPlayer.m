@@ -90,12 +90,15 @@ static const GLint kSampleCoordsAttributeIndex = 1;
 {
     // 事实证明这个 format 很重要，匹配不上是拿不到 pixelbuffer 的，想想也是，解码解不了
     // todo: 晚点再看从 avasset 获取 format 的代码
+    AVAsset *videoAsset = [AVURLAsset assetWithURL:_videoURL];
     NSDictionary *settings = @{
-                               (id)kCVPixelBufferPixelFormatTypeKey: @(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange),
+                               (id)kCVPixelBufferPixelFormatTypeKey: @([CYOpenGLTools pixelFormatForAsset:videoAsset]),
                                (id)kCVPixelBufferOpenGLCompatibilityKey: @YES,
 //                               (id)kCVPixelBufferBytesPerRowAlignmentKey:@(1),
 //                               (id)kCVPixelBufferIOSurfacePropertiesKey: @{},
                                };
+    
+    
     _playerItem = [AVPlayerItem playerItemWithURL:_videoURL];
     _videoOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:settings];
     
@@ -210,7 +213,6 @@ static const GLint kSampleCoordsAttributeIndex = 1;
 - (void)cyyuv_frameBufferOutput:(CYFrameBuffer *)framebuffer
 {
     [CYOpenGLTools ensureContext:_displayContext];
-    
     
     glUseProgram(_displayProgram);
     glViewport(0, 0, framebuffer.size.width, framebuffer.size.height);

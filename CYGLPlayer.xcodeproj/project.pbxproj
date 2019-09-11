@@ -22,6 +22,7 @@
 		C3C45D02231D362C00C8CC3F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C3C45D00231D362C00C8CC3F /* LaunchScreen.storyboard */; };
 		C3C45D05231D362C00C8CC3F /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C3C45D04231D362C00C8CC3F /* main.m */; };
 		C3C45D0D231D3A3200C8CC3F /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C3C45D0C231D3A3200C8CC3F /* MobileCoreServices.framework */; };
+		C3DD06E62328E19C0014BD19 /* Westlife - Hello My Love.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = C3DD06E52328DFEA0014BD19 /* Westlife - Hello My Love.mp4 */; };
 		C3F367CF23224D9B00B70125 /* CYOpenGLTools.m in Sources */ = {isa = PBXBuildFile; fileRef = C3F367CD23224D9B00B70125 /* CYOpenGLTools.m */; };
 /* End PBXBuildFile section */
 
@@ -50,6 +51,7 @@
 		C3C45D03231D362C00C8CC3F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C3C45D04231D362C00C8CC3F /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		C3C45D0C231D3A3200C8CC3F /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
+		C3DD06E52328DFEA0014BD19 /* Westlife - Hello My Love.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Westlife - Hello My Love.mp4"; sourceTree = "<group>"; };
 		C3F367CD23224D9B00B70125 /* CYOpenGLTools.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CYOpenGLTools.m; sourceTree = "<group>"; };
 		C3F367CE23224D9B00B70125 /* CYOpenGLTools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CYOpenGLTools.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -123,6 +125,7 @@
 				C3C45D00231D362C00C8CC3F /* LaunchScreen.storyboard */,
 				C3C45D03231D362C00C8CC3F /* Info.plist */,
 				C3C45D04231D362C00C8CC3F /* main.m */,
+				C3DD06E52328DFEA0014BD19 /* Westlife - Hello My Love.mp4 */,
 				C3C0743C2321324C00C3257C /* u5408u6210_1_background.mp4 */,
 			);
 			path = CYGLPlayer;
@@ -206,6 +209,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C3DD06E62328E19C0014BD19 /* Westlife - Hello My Love.mp4 in Resources */,
 				C3C45D02231D362C00C8CC3F /* LaunchScreen.storyboard in Resources */,
 				C3C0743D2321327200C3257C /* u5408u6210_1_background.mp4 in Resources */,
 				C3C45CFF231D362C00C8CC3F /* Assets.xcassets in Resources */,
