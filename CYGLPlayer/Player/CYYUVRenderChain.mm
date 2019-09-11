@@ -111,6 +111,7 @@ static void *_GLQueueKey;
         self.yuvEntry.pixelBuffer = pixelBuffer;
         for (CYYUVRenderChainItem *item in self.chainItems) {
             if (prevItem) {
+                item.pixelBuffer = pixelBuffer;
                 [item renderAfterPreviousItem:prevItem inContext:self.context];
                 CY_GET_GLERROR()
             }

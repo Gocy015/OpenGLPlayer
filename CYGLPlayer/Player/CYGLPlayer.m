@@ -108,6 +108,7 @@ static const GLint kSampleCoordsAttributeIndex = 1;
     [_chain addOutput:self];
     
     _coords = malloc(sizeof(CoordInfo) * 4);
+    //yaxies are flipped
     _coords[0] = (CoordInfo){{-1, -1, 0},{0, 1}};
     _coords[1] = (CoordInfo){{-1, 1, 0},{0, 0}};
     _coords[2] = (CoordInfo){{1, -1, 0},{1, 1}};

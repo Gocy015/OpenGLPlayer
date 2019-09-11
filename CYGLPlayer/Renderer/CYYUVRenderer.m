@@ -89,7 +89,7 @@ static GLfloat kColorConversion601FullRange[] = {
         _uniformLocationMap = [NSMutableDictionary new];
         _coords = malloc(sizeof(CoordInfo) * 4);
         
-        int val = 1;
+        float val = 1;
         _coords[0] = (CoordInfo){{-val, -val, 0},{0, 0}};
         _coords[1] = (CoordInfo){{-val, val, 0},{0, 1}};
         _coords[2] = (CoordInfo){{val, -val, 0},{1, 0}};
@@ -111,12 +111,15 @@ static GLfloat kColorConversion601FullRange[] = {
     
     CGSize frameSize = CGSizeMake(frameWidth, frameHeight);
     
+    
+    
     glBindFramebuffer(GL_FRAMEBUFFER, self.frameBuffer.frameBufferID);
     
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     
-    glViewport(0, 0, (GLsizei)frameSize.width ,  (GLsizei)frameSize.height);
+    CGRect viewPort = [self viewPortForSize:frameSize];
+    glViewport(viewPort.origin.x, viewPort.origin.y, viewPort.size.width, viewPort.size.height);
     
     GLuint buffer;
     glGenBuffers(1, &buffer);
@@ -160,6 +163,27 @@ static GLfloat kColorConversion601FullRange[] = {
     
 }
 
+- (CGRect)viewPortForSize:(CGSize)size
+{
+    // aspect fit
+    if (size.width == 0 || size.height == 0) {
+        return CGRectZero;
+    }
+    CGFloat widthRatio = self.frameBuffer.size.width / size.width;
+    CGFloat heightRatio = self.frameBuffer.size.height / size.height;
+    
+    CGFloat finalRatio = widthRatio;
+    if (widthRatio > heightRatio) { // target height is higher, we need to scale based on height
+        finalRatio = heightRatio;
+    }
+    
+    CGFloat finalWidth = size.width * finalRatio;
+    CGFloat finalHeight = size.height * finalRatio;
+    
+    CGFloat xGap = self.frameBuffer.size.width - finalWidth;
+    CGFloat yGap = self.frameBuffer.size.height - finalHeight;
+    return CGRectMake(xGap/2, yGap/2, finalWidth, finalHeight);
+}
 
 - (UIImage *)imageFromTextureWithwidth:(int)width height:(int)height {
     // glActiveTexture(GL_TEXTURE1); 先绑定某个纹理
