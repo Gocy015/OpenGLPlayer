@@ -20,6 +20,7 @@ static NSString * kVertString = STRINGIFY
  attribute vec2 aSamplerCoordinate;
  varying vec2 vSamplerCoordinate;
  
+ 
  void main() {
      gl_Position = aPosition;
      vSamplerCoordinate = aSamplerCoordinate;
@@ -32,16 +33,23 @@ static NSString * kFragString = STRINGIFY
  varying mediump vec2 vSamplerCoordinate;
  uniform sampler2D uSamplerY;
  uniform sampler2D uSamplerUV;
+ uniform float uFullRange;
+ uniform mediump mat3 uColorConversionMatrix;
  
  void main() {
      mediump vec3 yuv;
      mediump vec3 rgb;
-
-     yuv.x = texture2D(uSamplerY, vSamplerCoordinate).r - (16.0 / 255.0);
-     yuv.yz = texture2D(uSamplerUV, vSamplerCoordinate).ra - vec2(128.0 / 255.0, 128.0 / 255.0);
-
-     rgb = yuv;
-     gl_FragColor = vec4(rgb, 1.0);
+     
+     if (uFullRange == 1.0) {
+         yuv.x = texture2D(uSamplerY, vSamplerCoordinate).r;
+         yuv.yz = texture2D(uSamplerUV, vSamplerCoordinate).ra - vec2(128.0 / 255.0, 128.0 / 255.0);
+     } else {
+         yuv.x = texture2D(uSamplerY, vSamplerCoordinate).r - (16.0 / 255.0);
+         yuv.yz = texture2D(uSamplerUV, vSamplerCoordinate).ra - vec2(128.0 / 255.0, 128.0 / 255.0);
+     }
+     
+     rgb = uColorConversionMatrix * yuv;
+     gl_FragColor = vec4(rgb, 1);
  }
 );
 
@@ -51,6 +59,14 @@ static const int kSamplerAttributeIndex = 1;
 
 static NSString * const kUniformYPlaneName = @"uSamplerY";
 static NSString * const kUniformUVPlaneName = @"uSamplerUV";
+static NSString * const kUniformColorConversionName = @"uColorConversionMatrix";
+static NSString * const kUniformColorRangeName = @"uFullRange";
+
+static GLfloat kColorConversion601FullRange[] = {
+    1.0f,       1.0f,       1.0f,
+    0.0f,       -0.343f,    1.765f,
+    1.4f,       -0.711f,    0.0f,
+};
 
 @interface CYYUVRenderer (){
     CVOpenGLESTextureRef _lumaTexture;
@@ -62,8 +78,6 @@ static NSString * const kUniformUVPlaneName = @"uSamplerUV";
 @property (nonatomic, strong) NSMutableDictionary *uniformLocationMap;
 @property (nonatomic, assign) CoordInfo *coords;
 
-
-
 @end
 
 @implementation CYYUVRenderer
@@ -74,10 +88,12 @@ static NSString * const kUniformUVPlaneName = @"uSamplerUV";
     if (self) {
         _uniformLocationMap = [NSMutableDictionary new];
         _coords = malloc(sizeof(CoordInfo) * 4);
-        _coords[0] = (CoordInfo){{-1, -1, 0},{0, 0}};
-        _coords[1] = (CoordInfo){{-1, 1, 0},{0, 1}};
-        _coords[2] = (CoordInfo){{1, -1, 0},{1, 0}};
-        _coords[3] = (CoordInfo){{1, 1, 0},{1, 1}};
+        
+        int val = 1;
+        _coords[0] = (CoordInfo){{-val, -val, 0},{0, 0}};
+        _coords[1] = (CoordInfo){{-val, val, 0},{0, 1}};
+        _coords[2] = (CoordInfo){{val, -val, 0},{1, 0}};
+        _coords[3] = (CoordInfo){{val, val, 0},{1, 1}};
     }
     return self;
 }
@@ -101,7 +117,6 @@ static NSString * const kUniformUVPlaneName = @"uSamplerUV";
     glClear(GL_COLOR_BUFFER_BIT);
     
     glViewport(0, 0, (GLsizei)frameSize.width ,  (GLsizei)frameSize.height);
-
     
     GLuint buffer;
     glGenBuffers(1, &buffer);
@@ -117,11 +132,10 @@ static NSString * const kUniformUVPlaneName = @"uSamplerUV";
     GLint yIndex = [self uniformIndex:kUniformYPlaneName];
     GLint uvIndex = [self uniformIndex:kUniformUVPlaneName];
     
-//    GLuint planeCount = (GLuint)CVPixelBufferGetPlaneCount(item.pixelBuffer);
     CVOpenGLESTextureRef yTexture = [self openGLTextureFromPixelBuffer:item.pixelBuffer pixelFormat:GL_LUMINANCE planeIndex:0 size:frameSize context:context];
     CVOpenGLESTextureRef uvTexture = [self openGLTextureFromPixelBuffer:item.pixelBuffer pixelFormat:GL_LUMINANCE_ALPHA planeIndex:1 size:CGSizeMake((int32_t)frameSize.width >> 1, (int32_t)frameSize.height >> 1) context:context];
 
-    //todo: cfrelease
+    //todo: cvrelease
 
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, CVOpenGLESTextureGetName(yTexture));
@@ -133,16 +147,17 @@ static NSString * const kUniformUVPlaneName = @"uSamplerUV";
     
 //    glBindTexture(GL_TEXTURE_2D, self.frameBuffer.textureID);
     
+    
+    GLint colorIndex = [self uniformIndex:kUniformColorConversionName];
+    GLint colorRangeIndex = [self uniformIndex:kUniformColorRangeName];
+    
+    glUniformMatrix3fv(colorIndex, 1, GL_FALSE, kColorConversion601FullRange);
+    glUniform1f(colorRangeIndex, 1.0);
+    
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//    glActiveTexture(GL_TEXTURE1);
-//    glBindTexture(GL_TEXTURE_2D, self.frameBuffer.textureID);
-//    UIImage *result = [self imageFromTextureWithwidth:frameSize.width height:frameSize.height];
-//    NSLog(@"%@", result);
-  
     
-//    glUseProgram(0);
 }
 
 

@@ -108,10 +108,10 @@ static const GLint kSampleCoordsAttributeIndex = 1;
     [_chain addOutput:self];
     
     _coords = malloc(sizeof(CoordInfo) * 4);
-    _coords[0] = (CoordInfo){{-1, -1, 0},{0, 0}};
-    _coords[1] = (CoordInfo){{-1, 1, 0},{0, 1}};
-    _coords[2] = (CoordInfo){{1, -1, 0},{1, 0}};
-    _coords[3] = (CoordInfo){{1, 1, 0},{1, 1}};
+    _coords[0] = (CoordInfo){{-1, -1, 0},{0, 1}};
+    _coords[1] = (CoordInfo){{-1, 1, 0},{0, 0}};
+    _coords[2] = (CoordInfo){{1, -1, 0},{1, 1}};
+    _coords[3] = (CoordInfo){{1, 1, 0},{1, 0}};
     
     dispatch_sync_task(^{
        [self initDisplayContext];
