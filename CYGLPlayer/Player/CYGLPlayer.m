@@ -89,7 +89,6 @@ static const GLint kSampleCoordsAttributeIndex = 1;
 - (void)_doInit
 {
     // 事实证明这个 format 很重要，匹配不上是拿不到 pixelbuffer 的，想想也是，解码解不了
-    // todo: 晚点再看从 avasset 获取 format 的代码
     AVAsset *videoAsset = [AVURLAsset assetWithURL:_videoURL];
     NSDictionary *settings = @{
                                (id)kCVPixelBufferPixelFormatTypeKey: @([CYOpenGLTools pixelFormatForAsset:videoAsset]),

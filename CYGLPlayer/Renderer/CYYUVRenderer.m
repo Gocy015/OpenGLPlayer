@@ -39,13 +39,15 @@ static NSString * kFragString = STRINGIFY
  void main() {
      mediump vec3 yuv;
      mediump vec3 rgb;
+     float factor = 255.0;
      // https://blog.csdn.net/CAICHAO1234/article/details/79260954
      if (uFullRange == 1.0) {
          yuv.x = texture2D(uSamplerY, vSamplerCoordinate).r;
-         yuv.yz = texture2D(uSamplerUV, vSamplerCoordinate).ra - vec2(128.0 / 255.0, 128.0 / 255.0);
+         // why ra? looks like rgb doesnt matter , a matters
+         yuv.yz = texture2D(uSamplerUV, vSamplerCoordinate).ba - vec2(128.0 / factor, 128.0 / factor);
      } else {
-         yuv.x = texture2D(uSamplerY, vSamplerCoordinate).r - (16.0 / 255.0);
-         yuv.yz = texture2D(uSamplerUV, vSamplerCoordinate).ra - vec2(128.0 / 255.0, 128.0 / 255.0);
+         yuv.x = texture2D(uSamplerY, vSamplerCoordinate).r - (16.0 / factor);
+         yuv.yz = texture2D(uSamplerUV, vSamplerCoordinate).ra - vec2(128.0 / factor, 128.0 / factor);
      }
      
      rgb = uColorConversionMatrix * yuv;
@@ -62,11 +64,34 @@ static NSString * const kUniformUVPlaneName = @"uSamplerUV";
 static NSString * const kUniformColorConversionName = @"uColorConversionMatrix";
 static NSString * const kUniformColorRangeName = @"uFullRange";
 
+// matrix * (y,u,v)  = (r,g,b)
+// y + 1.4v = r
+// y -0.343u - 0.711v = g
+// y + 1.765u = b
+// glsl 会按顺序以列存储，所以其实下面这个是：
+
+// 1,      0,    1.4
+// 1, -0.343, -0.711
+// 1,  1.765,      0
 static GLfloat kColorConversion601FullRange[] = {
     1.0f,       1.0f,       1.0f,
     0.0f,       -0.343f,    1.765f,
     1.4f,       -0.711f,    0.0f,
 };
+// BT.601, which is the standard for SDTV.
+static GLfloat kColorConversion601[] = {
+    1.164f,     1.164f,     1.164f,
+    0.0f,       -0.392f,    2.017f,
+    1.596f,     -0.813f,    0.0f,
+};
+
+// BT.709, which is the standard for HDTV.
+static GLfloat kColorConversion709[] = {
+    1.164f,     1.164f,     1.164f,
+    0.0f,       -0.213f,    2.112f,
+    1.793f,     -0.533f,    0.0f,
+};
+
 
 @interface CYYUVRenderer (){
     CVOpenGLESTextureRef _lumaTexture;
@@ -137,8 +162,6 @@ static GLfloat kColorConversion601FullRange[] = {
     
     CVOpenGLESTextureRef yTexture = [self openGLTextureFromPixelBuffer:item.pixelBuffer pixelFormat:GL_LUMINANCE planeIndex:0 size:frameSize context:context];
     CVOpenGLESTextureRef uvTexture = [self openGLTextureFromPixelBuffer:item.pixelBuffer pixelFormat:GL_LUMINANCE_ALPHA planeIndex:1 size:CGSizeMake((int32_t)frameSize.width >> 1, (int32_t)frameSize.height >> 1) context:context];
-
-    //todo: cvrelease
 
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, CVOpenGLESTextureGetName(yTexture));
